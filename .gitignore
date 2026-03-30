@@ -1,0 +1,17 @@
+# ambiente virtual
+.venv/
+venv/
+
+# cache do python
+__pycache__/
+*.pyc
+
+# arquivos de ambiente (IMPORTANTE)
+.env
+
+# banco sqlite (opcional)
+*.db
+
+# arquivos do sistema
+.DS_Store
+Thumbs.db
