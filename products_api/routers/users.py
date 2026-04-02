@@ -5,6 +5,7 @@ from sqlalchemy import  select, exists
 
 from products_api.schemas.users import UserPublicSchema, UserSchema, UserListPublicSchema 
 from products_api.core.database import get_session
+from products_api.core.security import get_password_hash
 from products_api.models import User
 from products_api.db import USERS
 
@@ -40,7 +41,7 @@ async def create_user(user: UserSchema, db: AsyncSession = Depends(get_session))
     db_user = User(
         username = user.username,
         email = user.email,
-        password = user.password,
+        password = get_password_hash(user.password),
     )
 
     db.add(db_user) # add: adiciona algo ao banco
@@ -59,6 +60,27 @@ async def list_users():
     return {'users': USERS}
 
 
+
+@routers.get(
+    path='/{user_id}', 
+    status_code=status.HTTP_200_OK,
+    response_model= UserPublicSchema,
+    summary='Buscar usuário pelo ID'
+)
+async def get_user(
+    user_id: int,
+    db: AsyncSession = Depends(get_session)
+):
+    user = await db.get(User, user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Usuário não encontrado',
+        )
+    
+    return user
+
 @routers.put(
     path='/{user_id}', 
     status_code=status.HTTP_201_CREATED, 
@@ -76,6 +98,20 @@ async def update_user(user_id: int, user: UserSchema):
     status_code=status.HTTP_204_NO_CONTENT,
     summary='Deletar usuário'
 )
-async def delete_user(user_id: int):
-    del USERS[user_id - 1]
+async def delete_user(
+    user_id: int,
+    db: AsyncSession = Depends(get_session)
+):
+    
+    user = await db.get(User, user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Usuário não encontrado',
+        )
+
+    await db.delete(user)
+    await db.commit()
+
     return 
