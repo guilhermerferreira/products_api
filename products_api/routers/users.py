@@ -7,7 +7,6 @@ from sqlalchemy import  select, exists
 
 from products_api.core.database import get_session
 from products_api.core.security import get_password_hash
-from products_api.db import USERS
 from products_api.models import User
 from products_api.schemas.users import UserPublicSchema, UserSchema, UserListPublicSchema, UserUpdateSchema 
 
