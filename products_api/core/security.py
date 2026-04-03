@@ -1,7 +1,7 @@
 from pwdlib import PasswordHash
 
 
-pwd_context = PasswordHash()
+pwd_context = PasswordHash.recommended()
 
 
 def get_password_hash(password: str) -> str:

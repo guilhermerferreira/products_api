@@ -1,13 +1,15 @@
-from fastapi import APIRouter, status, Depends, HTTPException
+from typing import Optional
+
+from fastapi import APIRouter, status, Depends, HTTPException, Query
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import  select, exists
 
-from products_api.schemas.users import UserPublicSchema, UserSchema, UserListPublicSchema 
 from products_api.core.database import get_session
 from products_api.core.security import get_password_hash
-from products_api.models import User
 from products_api.db import USERS
+from products_api.models import User
+from products_api.schemas.users import UserPublicSchema, UserSchema, UserListPublicSchema 
 
 
 routers = APIRouter()
@@ -56,9 +58,27 @@ async def create_user(user: UserSchema, db: AsyncSession = Depends(get_session))
     response_model=UserListPublicSchema,
     summary='Listar usuários'
 )
-async def list_users():
-    return {'users': USERS}
+async def list_users(
+    offset: int = Query(0, ge=0, description='Número de registros para pular'),
+    limit: int = Query(100, ge=1, description='Limite de registros'),
+    search: Optional[str] = Query(None, description='Buscar por username ou email'),
+    db: AsyncSession = Depends(get_session),
+):
+    query = select(User)
 
+    if search:
+        search_filter = f'%{search}%'
+        query = query.where(
+            (User.username.ilike(search_filter))
+            | (User.email.ilike(search_filter))
+        )
+
+    query = query.offset(offset).limit(limit)
+
+    result = await db.execute(query)
+    users = result.scalars().all()
+
+    return {'users': users, 'offset': offset, 'limit': limit}
 
 
 @routers.get(
