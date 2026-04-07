@@ -9,8 +9,7 @@ __pycache__/
 # arquivos de ambiente
 .env
 
-# banco sqlite e postgreql
-*.db
+# banco local session postgreql
 .sql
 
 # arquivos do sistema
