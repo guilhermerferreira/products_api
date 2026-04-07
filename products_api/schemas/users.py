@@ -52,5 +52,3 @@ class UserListPublicSchema(BaseModel):
     users: List[UserPublicSchema]
     offset: int
     limit: int
-    created_at: datetime
-    updated_at: datetime
