@@ -10,7 +10,7 @@ __pycache__/
 .env
 
 # banco local session postgreql
-.sql
+*.sql
 
 # arquivos do sistema
 .DS_Store
