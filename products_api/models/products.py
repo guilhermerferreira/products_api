@@ -1,21 +1,35 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, List
+from enum import Enum as EnumPy
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, String, Integer, Text, Numeric, func
+from sqlalchemy import ForeignKey, String, Integer, Text, Numeric, func, Enum as EnumORM
 
-from products_api.models import Base, User
+from products_api.models import Base
 
 if TYPE_CHECKING:
     from products_api.models import User
+
+
+class ProductStatus(str, EnumPy):
+    ACTIVE = 'active'
+    INACTIVE = 'inactive'
+    OUT_OF_STOCK = 'out_of_stock'
+
+
+class ProductCondition(str, EnumPy):
+    NEW = 'new'
+    USED = 'used'
+    REFURBISHED = 'refurbished'
+
 
 class Brand(Base):
     ''' Tabela de marcas '''
     __tablename__ = 'brands'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(50), unique=True)
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
     description: Mapped[str] = mapped_column(Text, default=None)
     created_at: Mapped[datetime] = mapped_column(
@@ -38,24 +52,35 @@ class Product(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    name: Mapped[str] = mapped_column(String(50))
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     description: Mapped[str] = mapped_column(Text, default=None)
 
-    price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
-    stock: Mapped[int] = mapped_column(Integer)
+    price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    stock: Mapped[int] = mapped_column(Integer, default=0)
+
+    status: Mapped[ProductStatus] = mapped_column(
+        EnumORM(ProductStatus, name='product_status_enum'),
+        nullable=False,
+        default=ProductStatus.ACTIVE,
+        index=True
+    )
+    condition: Mapped[ProductCondition] = mapped_column(
+        EnumORM(ProductCondition, name='product_condition_enum'),
+        nullable=False,
+        default=ProductCondition.NEW
+    )
+    is_available: Mapped[bool] = mapped_column(default=True)
 
     brand_id: Mapped[int] = mapped_column(ForeignKey('brands.id'))
-
     owner_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
 
     created_at: Mapped[datetime] = mapped_column(
-        server_default=func.now()
+        server_default=func.now(),
     )
-    updated_At: Mapped[datetime] = mapped_column(
+    updated_at: Mapped[datetime] = mapped_column(
         onupdate=func.now(),
-        server_default=func.now()
+        server_default=func.now(),
     )
-    is_avaibled: Mapped[bool] = mapped_column(default=True)
 
     brand: Mapped['Brand'] = relationship(
         'Brand',
