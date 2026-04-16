@@ -19,7 +19,7 @@ class ProductSchema(BaseModel):
     condition: ProductCondition
     is_available: bool = True
     brand_id: int
-    owner_id: int
+    seller_id: int
 
     @field_validator('name')
     def name_min_length(cls, v):
@@ -49,7 +49,7 @@ class ProductUpdateSchema(BaseModel):
     condition: Optional[ProductCondition] = None
     is_available: Optional[bool] = None
     brand_id: Optional[int] = None
-    owner_id: Optional[int] = None
+    seller_id: Optional[int] = None
 
     @field_validator('name')
     def name_min_length(cls, v):
@@ -81,18 +81,18 @@ class ProductPublicSchema(BaseModel):
     
     id: int
     name: str
-    description: Optional[str] = None
+    description: Optional[str]
     price: Decimal
     stock: int
     status: ProductStatus
     condition: ProductCondition
-    is_available: bool = True
+    is_available: bool
     brand_id: int
-    owner_id: int    
+    seller_id: int    
     created_at: datetime
     updated_at: datetime
     brand: BrandPublicSchema
-    owner: UserPublicSchema
+    seller: UserPublicSchema
 
 
 class ProductListPublicSchema(BaseModel):

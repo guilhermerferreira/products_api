@@ -71,7 +71,7 @@ class Product(Base):
     is_available: Mapped[bool] = mapped_column(default=True)
 
     brand_id: Mapped[int] = mapped_column(ForeignKey('brands.id'))
-    owner_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    seller_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
 
     created_at: Mapped[datetime] = mapped_column(
         server_default=func.now(),
@@ -85,7 +85,7 @@ class Product(Base):
         'Brand',
         back_populates='products'
     )
-    owner: Mapped['User'] = relationship(
+    seller: Mapped['User'] = relationship(
         'User',
         back_populates='products'
     )

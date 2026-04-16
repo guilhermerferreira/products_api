@@ -29,5 +29,5 @@ class User(Base):
 
     products: Mapped[List['Product']] = relationship(
         'Product',
-        back_populates='owner',
+        back_populates='seller',
     )
