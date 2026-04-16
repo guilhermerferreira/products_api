@@ -13,8 +13,7 @@ if TYPE_CHECKING:
 
 
 class ProductStatus(str, EnumPy):
-    ACTIVE = 'active'
-    INACTIVE = 'inactive'
+    IN_STOCK = 'in_stock'
     OUT_OF_STOCK = 'out_of_stock'
 
 
@@ -61,7 +60,7 @@ class Product(Base):
     status: Mapped[ProductStatus] = mapped_column(
         EnumORM(ProductStatus, name='product_status_enum'),
         nullable=False,
-        default=ProductStatus.ACTIVE,
+        default=ProductStatus.IN_STOCK,
         index=True
     )
     condition: Mapped[ProductCondition] = mapped_column(
