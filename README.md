@@ -13,10 +13,9 @@
 # PostgreSQL - asyncpg
 
 # O que o projeto faz
-# Criar usuários
-# Estrutura inicial de produtos
-# Relacionamento entre tabelas
-# Uso de banco de dados com ORM
+# Criar usuários, lista, atualiza e remove
+# Cria  marcas, lista, atualiza e remove
+# Cria produtos, lista, atualiza e remove
 
 # Como rodar
 # 1. Clonar o projeto
