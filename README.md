@@ -2,20 +2,23 @@
 
 # API simples feita com FastAPI para estudo de backend em Python.
 
-# 🚀 Tecnologias
+# Tecnologias
+# Poetry
 # Python
+# pwdlib
+# pydantic
 # FastAPI
 # SQLAlchemy
 # Alembic
-# SQLite
-# Poetry
+# PostgreSQL - asyncpg
 
-# 📚 O que o projeto faz
+# O que o projeto faz
 # Criar usuários
 # Estrutura inicial de produtos
 # Relacionamento entre tabelas
 # Uso de banco de dados com ORM
-# ⚙️ Como rodar
+
+# Como rodar
 # 1. Clonar o projeto
 
 # git clone https://github.com/guilhermerferreira/products_api.git
@@ -41,15 +44,15 @@
 
 # uvicorn app.main --reload
 
-# 🌐 Acessar no navegador
+# Acessar no navegador
 
 # http://127.0.0.1:8000/docs
 
-# 💡 Observações
+# Observações
 
 # sse projeto foi feito para aprendizado e prática com FastAPI e banco de dados.
 
-# 👨‍💻 Autor
+# Autor
 
 # Guilherme Rodrigues
 # https://www.linkedin.com/in/guilherme-rodrigues-ferreira-306876356/
