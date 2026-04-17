@@ -11,10 +11,10 @@ from products_api.models import User
 from products_api.schemas.users import UserPublicSchema, UserSchema, UserListPublicSchema, UserUpdateSchema 
 
 
-routers = APIRouter()
+router = APIRouter()
 
 
-@routers.post(
+@router.post(
     path='/',
     status_code=status.HTTP_201_CREATED,
     response_model=UserPublicSchema,
@@ -52,7 +52,7 @@ async def create_user(user: UserSchema, db: AsyncSession = Depends(get_session))
     return db_user
 
 
-@routers.get(
+@router.get(
     path='/',
     status_code=status.HTTP_200_OK, 
     response_model=UserListPublicSchema,
@@ -81,7 +81,7 @@ async def list_users(
     return {'users': users, 'offset': offset, 'limit': limit}
 
 
-@routers.get(
+@router.get(
     path='/{user_id}', 
     status_code=status.HTTP_200_OK,
     response_model= UserPublicSchema,
@@ -102,7 +102,7 @@ async def get_user(
     return user
 
 
-@routers.put(
+@router.put(
     path='/{user_id}', 
     status_code=status.HTTP_201_CREATED, 
     response_model=UserPublicSchema,
@@ -161,7 +161,7 @@ async def update_user(
     return user
 
 
-@routers.delete(
+@router.delete(
     path='/{user_id}', 
     status_code=status.HTTP_204_NO_CONTENT,
     summary='Deletar usuário'

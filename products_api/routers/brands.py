@@ -14,10 +14,10 @@ from products_api.schemas.brands import (
 )
 
 
-routers = APIRouter()
+router = APIRouter()
 
 
-@routers.post(
+@router.post(
     path='/',
     status_code=status.HTTP_201_CREATED,
     response_model=BrandPublicSchema,
@@ -49,7 +49,7 @@ async def create_brand(
     return db_brand
 
 
-@routers.get(
+@router.get(
     path='/',
     status_code=status.HTTP_200_OK,
     response_model=BrandListPublicSchema,
@@ -79,7 +79,7 @@ async def list_brands(
     return {'brands': brands, 'offset': offset, 'limit': limit}
 
 
-@routers.get(
+@router.get(
     path='/{brand_id}',
     status_code=status.HTTP_200_OK,
     response_model=BrandPublicSchema,
@@ -100,7 +100,7 @@ async def get_brand(
     return brand
 
 
-@routers.put(
+@router.put(
     path='/{brand_id}',
     status_code=status.HTTP_200_OK,
     response_model=BrandPublicSchema,
@@ -142,7 +142,8 @@ async def update_brand(
 
     return brand
 
-@routers.delete(
+
+@router.delete(
     path='/{brand_id}',
     status_code=status.HTTP_200_OK,
     response_model=BrandPublicSchema,

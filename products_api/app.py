@@ -1,21 +1,27 @@
 from fastapi import FastAPI, status
 
-from products_api.routers import users, brands
+from products_api.routers import users, brands, products
 
 
 app = FastAPI()
 
 
 app.include_router(
-    router=users.routers,
+    router=users.router,
     prefix='/api/v1/users',
     tags=['users'],
 )
 
 app.include_router(
-    router=brands.routers,
+    router=brands.router,
     prefix='/api/v1/brands',
     tags=['brands'],
+)
+
+app.include_router(
+    router=products.router,
+    prefix='/api/v1/products',
+    tags=['products'],
 )
 
 
