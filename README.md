@@ -1,57 +1,57 @@
 # Products API
 
-# API simples feita com FastAPI para estudo de backend em Python.
+**API simples feita com FastAPI para *estudo* de backend em Python.**
 
-# Tecnologias
-# Poetry
-# Python
-# pwdlib
-# pydantic
-# FastAPI
-# SQLAlchemy
-# Alembic
-# PostgreSQL - asyncpg
+## Tecnologias
+* Poetry
+* Python
+* pwdlib
+* pydantic
+* FastAPI
+* SQLAlchemy
+* Alembic
+* PostgreSQL - asyncpg
 
-# O que o projeto faz
-# Criar usuários, lista, atualiza e remove
-# Cria  marcas, lista, atualiza e remove
-# Cria produtos, lista, atualiza e remove
+## O que o projeto faz
+* Criar usuários, lista, atualiza e remove
+* Cria  marcas, lista, atualiza e remove
+* Cria produtos, lista, atualiza e remove
 
-# Como rodar
-# 1. Clonar o projeto
+### Como rodar
+* 1. Clonar o projeto
 
-# git clone https://github.com/guilhermerferreira/products_api.git
-# cd products_api
+* git clone https://github.com/guilhermerferreira/products_api.git
+* cd products_api
 
-# 2. Instalar dependências
+### 2. Instalar dependências
 
-# poetry install
+* poetry install
 
-# 3. Ativar o ambiente
+### 3. Ativar o ambiente
 
-# poetry shell
+* poetry shell
 
-# 4. Criar o .env
+### 4. Criar o .env
 
-# DATABASE_URL=sqlite+aiosqlite:///products.db
+* DATABASE_URL=sqlite+aiosqlite:///products.db
 
-# 5. Rodar as migrations
+### 5. Rodar as migrations
 
-# alembic upgrade head
+* alembic upgrade head
 
-# 6. Rodar o servidor
+### 6. Rodar o servidor
 
-# uvicorn app.main --reload
+* uvicorn app.main --reload
 
-# Acessar no navegador
+### Acessar no navegador
 
-# http://127.0.0.1:8000/docs
+* http://127.0.0.1:8000/docs
 
-# Observações
+## Observações
 
-# sse projeto foi feito para aprendizado e prática com FastAPI e banco de dados.
+Esse projeto foi feito para **aprendizado** e prática com FastAPI e banco de dados.
 
-# Autor
+## Autor
 
-# Guilherme Rodrigues
-# https://www.linkedin.com/in/guilherme-rodrigues-ferreira-306876356/
+**Guilherme Rodrigues**
+[LinkedIn](https://www.linkedin.com/in/guilherme-rodrigues-ferreira-306876356/)
