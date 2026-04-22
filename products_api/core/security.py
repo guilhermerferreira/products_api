@@ -63,3 +63,20 @@ def verify_token(token: str) -> Dict:
             detail='Could not validate credentials',
             headers={'WWW-Authenticate': 'Bearer'}
         )
+
+
+async def authenticate_user(
+    email: str, password: str, db: AsyncSession
+) -> Optional[User]:
+    
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        return None
+    
+    if not verify_password(password, user.password):
+        return None
+    
+    return user
+
