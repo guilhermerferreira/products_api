@@ -116,3 +116,11 @@ async def get_current_user(
         )
     
     return user 
+
+
+def verify_product_seller(user: User, product_seller_id: int) -> None:
+    if user.id != product_seller_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Not enough permissions to access this product'
+        )
