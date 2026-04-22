@@ -1,13 +1,20 @@
 from datetime import datetime, timedelta, timezone
-from typing import Dict
+from typing import Dict, Optional
 
 import jwt
+from fastapi import HTTPException, status, Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from pwdlib import PasswordHash
 
 from products_api.core.settings import Settings
+from products_api.models import User
+from products_api.core.database import get_session
 
 
 pwd_context = PasswordHash.recommended()
+security = HTTPBearer()
 settings = Settings()
 
 
@@ -25,8 +32,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(data: Dict) -> str:
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc()) + timedelta(
-        minutes=settings.JWT_EXPIRED_MINUTES
+    expire = datetime.now(timezone.utc) + timedelta(
+        minutes=settings.JWT_EXPIRATION_MINUTES
     )
 
     to_encode.update({'exp': expire})
@@ -37,3 +44,22 @@ def create_access_token(data: Dict) -> str:
 
     return jwt_encoded
 
+
+def verify_token(token: str) -> Dict:
+    try:
+        payload = jwt.decode(
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        )
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Token has expired',
+            headers={'WWW-Authenticate': 'Bearer'}
+        )
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Could not validate credentials',
+            headers={'WWW-Authenticate': 'Bearer'}
+        )
