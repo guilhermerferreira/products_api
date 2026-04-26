@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from products_api.core.security import authenticate_user, create_access_token 
+from products_api.core.security import authenticate_user, create_access_token, get_current_user 
 from products_api.core.database import get_session
 from products_api.schemas.auth import LoginRequest, Token
-
+from products_api.models import User
 
 router = APIRouter()
 
@@ -33,3 +33,14 @@ async def token(
 
     return {'access_token': access_token, 'token_type': 'bearer'}
 
+
+@router.post(
+    path='/refresh_token',
+    response_model=Token,
+    status_code=status.HTTP_200_OK,
+    summary='Atualizar token de acesso',
+)
+async def refresh_token(current_user: User = Depends(get_current_user)):
+    access_token = create_access_token(data={'sub': current_user.id})
+
+    return {'access_token': access_token, 'token_type': 'bearer'}
