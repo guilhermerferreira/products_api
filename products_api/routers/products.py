@@ -8,6 +8,7 @@ from sqlalchemy.orm import selectinload
 from products_api.models import Product, User, Brand
 from products_api.models.products import ProductCondition, ProductStatus
 from products_api.core.database import get_session
+from products_api.core.security import get_current_user, verify_product_seller
 from products_api.schemas.products import(
     ProductSchema,
     ProductPublicSchema,
@@ -27,6 +28,7 @@ router = APIRouter()
 )
 async def create_product(
     product: ProductSchema,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session)
 ):  
     name_exists = await db.scalar(
@@ -66,7 +68,7 @@ async def create_product(
         condition = product.condition,
         is_available = product.is_available,
         brand_id = product.brand_id,
-        seller_id = product.seller_id_id,
+        seller_id = product.seller_id,
     )
 
     db.add(db_product)
@@ -100,6 +102,7 @@ async def list_products(
     is_available: Optional[bool] = Query(None, description=('Filtrar por disponibilidade')),
     min_price: Optional[float] = Query(None, description=('Preço mínimo')),
     max_price: Optional[float] = Query(None, description=('Preço máximo')),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session)
 ):
     query = select(Product).options(selectinload(Product.brand), selectinload(Product.seller))
@@ -145,6 +148,7 @@ async def list_products(
 )
 async def get_product(
     product_id: int,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
     result = await db.execute(
@@ -159,6 +163,9 @@ async def get_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Produto não encontrado'
         )
+    
+    # Verifica se o produto pertence ao usuario logado
+    verify_product_seller(current_user, product.seller_id)
 
     return product
 
@@ -172,6 +179,7 @@ async def get_product(
 async def update_product(
     product_id: int,
     product_update: ProductUpdateSchema,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session)
 ):
     product = await db.get(Product, product_id)
@@ -181,6 +189,9 @@ async def update_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Produto não encontrado',
         )
+    
+    # Verifica se o produto pertence ao usuario logado
+    verify_product_seller(current_user, product.seller_id)
 
     update_data = product_update.model_dump(exclude_unset=True)        
 
@@ -237,6 +248,7 @@ async def update_product(
 )
 async def delete_product(
     product_id: int,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session)
 ):
     product = await db.get(Product, product_id)
@@ -246,6 +258,9 @@ async def delete_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Produto não encontrado',
         )
+    
+    # Verifica se o produto é do usuario logado
+    verify_product_seller(current_user, product.seller_id)
     
     await db.delete(product)
     await db.commit()
