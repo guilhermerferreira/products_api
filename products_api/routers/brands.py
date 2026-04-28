@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, exists, func
 
 from products_api.core.database import get_session
-from products_api.models import Brand, Product
+from products_api.core.security import get_current_user
+from products_api.models import Brand, Product, User
 from products_api.schemas.brands import (
     BrandSchema,
     BrandPublicSchema,
@@ -25,6 +26,7 @@ router = APIRouter()
 )
 async def create_brand(
     brand: BrandSchema,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
     name_exist = await db.scalar(
@@ -60,6 +62,7 @@ async def list_brands(
     limit: int = Query(100, ge=1, le=100, description='Limite de registros'),
     search: Optional[str] = Query(None, description='Buscar marca por nome'),
     is_active: Optional[bool] = Query(None, description='Filtrar por marcas ativas'),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
     query = select(Brand)
@@ -87,6 +90,7 @@ async def list_brands(
 )
 async def get_brand(
     brand_id: int,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
     brand = await db.get(Brand, brand_id)
@@ -109,6 +113,7 @@ async def get_brand(
 async def update_brand(
     brand_id: int,
     brand_update: BrandUpdateSchema,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
     brand = await db.get(Brand, brand_id)
@@ -151,6 +156,7 @@ async def update_brand(
 )
 async def delete_brand(
     brand_id: int,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
     brand = await db.get(Brand, brand_id)

@@ -1,10 +1,16 @@
 from fastapi import FastAPI, status
 
-from products_api.routers import users, brands, products
+from products_api.routers import users, brands, products, auth
 
 
 app = FastAPI()
 
+
+app.include_router(
+    router=auth.router,
+    prefix='/api/v1/auth',
+    tags=['auth']
+)
 
 app.include_router(
     router=users.router,

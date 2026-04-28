@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import  select, exists
 
 from products_api.core.database import get_session
-from products_api.core.security import get_password_hash
+from products_api.core.security import get_password_hash, get_current_user
 from products_api.models import User
 from products_api.schemas.users import UserPublicSchema, UserSchema, UserListPublicSchema, UserUpdateSchema 
 
@@ -111,7 +111,8 @@ async def get_user(
 async def update_user(
     user_id: int, 
     user_update: UserUpdateSchema,
-    db: AsyncSession = Depends(get_session)
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_session),
 ):
     user = await db.get(User, user_id)
 
@@ -168,6 +169,7 @@ async def update_user(
 )
 async def delete_user(
     user_id: int,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session)
 ):
     
