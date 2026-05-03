@@ -32,8 +32,9 @@ dev = [
     "taskipy (>=1.14.1,<2.0.0)"
 ]
 
-[tools.ruff]
-line-lenght = 79
+
+[tool.ruff]
+line-length = 100
 exclude = [
     ".bzr",
     ".direnv",

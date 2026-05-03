@@ -1,19 +1,18 @@
 from typing import Optional
 
-from fastapi import APIRouter, status, HTTPException, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, exists, func
 
 from products_api.core.database import get_session
 from products_api.core.security import get_current_user
 from products_api.models import Brand, Product, User
 from products_api.schemas.brands import (
-    BrandSchema,
-    BrandPublicSchema,
     BrandListPublicSchema,
-    BrandUpdateSchema
+    BrandPublicSchema,
+    BrandSchema,
+    BrandUpdateSchema,
 )
-
 
 router = APIRouter()
 
@@ -29,19 +28,16 @@ async def create_brand(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
-    name_exist = await db.scalar(
-        select(exists().where(Brand.name == brand.name))
-    )
+    name_exist = await db.scalar(select(exists().where(Brand.name == brand.name)))
     if name_exist:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Nome da marca já em uso'
+            status_code=status.HTTP_400_BAD_REQUEST, detail='Nome da marca já em uso'
         )
 
     db_brand = Brand(
-       name=brand.name,
-       description=brand.description,
-       is_active=brand.is_active,
+        name=brand.name,
+        description=brand.description,
+        is_active=brand.is_active,
     )
 
     db.add(db_brand)
@@ -117,21 +113,15 @@ async def update_brand(
     db: AsyncSession = Depends(get_session),
 ):
     brand = await db.get(Brand, brand_id)
-    
+
     if not brand:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Marca não encontrada'
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Marca não encontrada')
 
     update_data = brand_update.model_dump(exclude_unset=True)
 
     if 'name' in update_data and update_data['name'] != brand.name:
         name_exist = await db.scalar(
-            select(exists().where(
-                (Brand.name == update_data['name']) & 
-                (Brand.id != brand_id)
-            ))
+            select(exists().where((Brand.name == update_data['name']) & (Brand.id != brand_id)))
         )
         if name_exist:
             raise HTTPException(
@@ -178,5 +168,3 @@ async def delete_brand(
 
     await db.delete(brand)
     await db.commit()
-
-    return

@@ -8,10 +8,10 @@ class Token(BaseModel):
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str 
+    password: str
 
     @field_validator('password')
     def password_min_length(cls, v):
         if len(v) < 6:
-            raise ValueError('Password deve conter pelo menos 6 caracteres')        
+            raise ValueError('Password deve conter pelo menos 6 caracteres')
         return v

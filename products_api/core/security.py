@@ -2,16 +2,15 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
 
 import jwt
-from fastapi import HTTPException, status, Depends
+from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from pwdlib import PasswordHash
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from products_api.core.database import get_session
 from products_api.core.settings import Settings
 from products_api.models import User
-from products_api.core.database import get_session
-
 
 pwd_context = PasswordHash.recommended()
 security = HTTPBearer()
@@ -19,71 +18,64 @@ settings = Settings()
 
 
 def get_password_hash(password: str) -> str:
-    '''Recebe uma senha e devolve a mesma criptografada'''
+    """Recebe uma senha e devolve a mesma criptografada"""
     return pwd_context.hash(password)  # hash() criptografa a senha
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    ''' Recebe uma senha descriptografada e compara com a criptografada
-        se for igual retorna True
-    '''
-    return pwd_context.verify(plain_password, hashed_password) # verify() faz a comparação
+    """Recebe uma senha descriptografada e compara com a criptografada
+    se for igual retorna True
+    """
+    # verify() faz a comparação
+    return pwd_context.verify(plain_password, hashed_password)
 
 
 def create_access_token(data: Dict) -> str:
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(
-        minutes=settings.JWT_EXPIRATION_MINUTES
-    )
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES)
 
     to_encode.update({'exp': expire})
 
-    jwt_encoded = jwt.encode(
-        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
-    )
+    jwt_encoded = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
     return jwt_encoded
 
 
 def verify_token(token: str) -> Dict:
     try:
-        payload = jwt.decode(
-            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Token has expired',
-            headers={'WWW-Authenticate': 'Bearer'}
+            headers={'WWW-Authenticate': 'Bearer'},
         )
     except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Could not validate credentials',
-            headers={'WWW-Authenticate': 'Bearer'}
+            headers={'WWW-Authenticate': 'Bearer'},
         )
 
 
-async def authenticate_user(
-    email: str, password: str, db: AsyncSession
-) -> Optional[User]:
-    
+async def authenticate_user(email: str, password: str, db: AsyncSession) -> Optional[User]:
+
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
 
     if not user:
         return None
-    
+
     if not verify_password(password, user.password):
         return None
-    
+
     return user
 
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session),
 ) -> User:
     payload = verify_token(credentials.credentials)
 
@@ -93,18 +85,18 @@ async def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Could not validate credentials',
-            headers={'WWW-Authenticate': 'Bearer'}
+            headers={'WWW-Authenticate': 'Bearer'},
         )
-    
+
     try:
         user_id = int(user_id_str)
     except (ValueError, TypeError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Could not validate credentials',
-            headers={'WWW-Authenticate': 'Bearer'}
+            headers={'WWW-Authenticate': 'Bearer'},
         )
-    
+
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
 
@@ -112,15 +104,15 @@ async def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Could not validate credentials',
-            headers={'WWW-Authenticate': 'Bearer'}
+            headers={'WWW-Authenticate': 'Bearer'},
         )
-    
-    return user 
+
+    return user
 
 
 def verify_product_seller(user: User, product_seller_id: int) -> None:
     if user.id != product_seller_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail='Not enough permissions to access this product'
+            detail='Not enough permissions to access this product',
         )

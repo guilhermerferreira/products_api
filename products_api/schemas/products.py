@@ -1,11 +1,10 @@
-from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
+from typing import List, Optional
 
-from pydantic import BaseModel, field_validator, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
-
-from products_api.models.products import ProductStatus, ProductCondition
+from products_api.models.products import ProductCondition, ProductStatus
 from products_api.schemas.brands import BrandPublicSchema
 from products_api.schemas.users import UserPublicSchema
 
@@ -26,7 +25,7 @@ class ProductSchema(BaseModel):
         if len(v.strip()) < 3:
             raise ValueError('Nome do produto deve conter pelo menos 3 caracteres')
         return v.strip()
-    
+
     @field_validator('price')
     def price_validate(cls, v):
         if v <= 0:
@@ -58,7 +57,7 @@ class ProductUpdateSchema(BaseModel):
         if len(v.strip()) < 3:
             raise ValueError('Nome do produto deve conter pelo menos 3 caracteres')
         return v.strip()
-    
+
     @field_validator('price')
     def price_validate(cls, v):
         if v is None:
@@ -74,11 +73,11 @@ class ProductUpdateSchema(BaseModel):
         if v <= 0:
             raise ValueError('Estoque do produto deve ser maior que zero')
         return v
-    
+
 
 class ProductPublicSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True) # permite criar um CarPublicSchema a partir de outros objetos
-    
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     description: Optional[str]
@@ -88,7 +87,7 @@ class ProductPublicSchema(BaseModel):
     condition: ProductCondition
     is_available: bool
     brand_id: int
-    seller_id: int    
+    seller_id: int
     created_at: datetime
     updated_at: datetime
     brand: BrandPublicSchema
@@ -99,4 +98,3 @@ class ProductListPublicSchema(BaseModel):
     products: List[ProductPublicSchema]
     offset: int
     limit: int
-

@@ -1,16 +1,11 @@
 from fastapi import FastAPI, status
 
-from products_api.routers import users, brands, products, auth
-
+from products_api.routers import auth, brands, products, users
 
 app = FastAPI()
 
 
-app.include_router(
-    router=auth.router,
-    prefix='/api/v1/auth',
-    tags=['auth']
-)
+app.include_router(router=auth.router, prefix='/api/v1/auth', tags=['auth'])
 
 app.include_router(
     router=users.router,
@@ -34,4 +29,3 @@ app.include_router(
 @app.get(path='/', status_code=status.HTTP_200_OK)
 async def health_check():
     return {'status': 'ok'}
-

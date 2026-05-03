@@ -1,21 +1,20 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, status, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, exists
 from sqlalchemy.orm import selectinload
 
-from products_api.models import Product, User, Brand
-from products_api.models.products import ProductCondition, ProductStatus
 from products_api.core.database import get_session
 from products_api.core.security import get_current_user, verify_product_seller
-from products_api.schemas.products import(
-    ProductSchema,
-    ProductPublicSchema,
+from products_api.models import Brand, Product, User
+from products_api.models.products import ProductCondition, ProductStatus
+from products_api.schemas.products import (
     ProductListPublicSchema,
-    ProductUpdateSchema
+    ProductPublicSchema,
+    ProductSchema,
+    ProductUpdateSchema,
 )
-
 
 router = APIRouter()
 
@@ -24,51 +23,43 @@ router = APIRouter()
     path='/',
     status_code=status.HTTP_201_CREATED,
     response_model=ProductPublicSchema,
-    summary='Criar produto'
+    summary='Criar produto',
 )
 async def create_product(
     product: ProductSchema,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_session)
-):  
-    name_exists = await db.scalar(
-        select(exists().where(Product.name == product.name))
-    )
+    db: AsyncSession = Depends(get_session),
+):
+    name_exists = await db.scalar(select(exists().where(Product.name == product.name)))
     if name_exists:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Nome do produto já em uso'
+            status_code=status.HTTP_400_BAD_REQUEST, detail='Nome do produto já em uso'
         )
 
-    brand_exists = await db.scalar(
-        select(exists().where(Brand.id == product.brand_id))
-    )
+    brand_exists = await db.scalar(select(exists().where(Brand.id == product.brand_id)))
     if not brand_exists:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Marca não encontrada',
         )
-    
-    seller_exists = await db.scalar(
-        select(exists().where(User.id == product.seller_id))
-    )
+
+    seller_exists = await db.scalar(select(exists().where(User.id == product.seller_id)))
     if not seller_exists:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Proprietário não encontrado',
         )
-    
 
     db_product = Product(
-        name = product.name,
-        description = product.description,
-        price = product.price,
-        stock = product.stock,
-        status = product.status,
-        condition = product.condition,
-        is_available = product.is_available,
-        brand_id = product.brand_id,
-        seller_id = product.seller_id,
+        name=product.name,
+        description=product.description,
+        price=product.price,
+        stock=product.stock,
+        status=product.status,
+        condition=product.condition,
+        is_available=product.is_available,
+        brand_id=product.brand_id,
+        seller_id=product.seller_id,
     )
 
     db.add(db_product)
@@ -97,13 +88,13 @@ async def list_products(
     search: Optional[str] = Query(None, description=('Buscar produto por nome')),
     brand_id: Optional[int] = Query(None, description=('Filtrar por marca')),
     seller_id: Optional[int] = Query(None, description=('Filtrar por vendedor')),
-    condition: Optional[ProductCondition] = Query(None, description=('Filtrar produto pela condição')),
-    status: Optional[ProductStatus] = Query(None, description=('Filtrar produto pelos status(em estoque/sem estoque)')),
+    condition: Optional[ProductCondition] = Query(None, description=('Filtrar pela condição')),
+    status: Optional[ProductStatus] = Query(None, description=('Filtrar produto pelos status')),
     is_available: Optional[bool] = Query(None, description=('Filtrar por disponibilidade')),
     min_price: Optional[float] = Query(None, description=('Preço mínimo')),
     max_price: Optional[float] = Query(None, description=('Preço máximo')),
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session),
 ):
     query = select(Product).options(selectinload(Product.brand), selectinload(Product.seller))
 
@@ -159,11 +150,8 @@ async def get_product(
     product = result.scalar_one_or_none()
 
     if not product:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Produto não encontrado'
-        )
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Produto não encontrado')
+
     # Verifica se o produto pertence ao usuario logado
     verify_product_seller(current_user, product.seller_id)
 
@@ -174,13 +162,13 @@ async def get_product(
     path='/{product_id}',
     status_code=status.HTTP_200_OK,
     response_model=ProductPublicSchema,
-    summary='Atualizar produto'
+    summary='Atualizar produto',
 )
 async def update_product(
     product_id: int,
     product_update: ProductUpdateSchema,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session),
 ):
     product = await db.get(Product, product_id)
 
@@ -189,26 +177,25 @@ async def update_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Produto não encontrado',
         )
-    
+
     # Verifica se o produto pertence ao usuario logado
     verify_product_seller(current_user, product.seller_id)
 
-    update_data = product_update.model_dump(exclude_unset=True)        
+    update_data = product_update.model_dump(exclude_unset=True)
 
     if 'name' in update_data and update_data['name'] != product.name:
         name_exists = await db.scalar(
-        select(exists().where( (Product.name == update_data['name']) & (Product.id != product_id) )) 
-    )
+            select(
+                exists().where((Product.name == update_data['name']) & (Product.id != product_id))
+            )
+        )
         if name_exists:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='Nome do produto já em uso'
+                status_code=status.HTTP_400_BAD_REQUEST, detail='Nome do produto já em uso'
             )
-    
+
     if 'brand_id' in update_data and update_data['brand_id'] != product.brand_id:
-        brand_exists = await db.scalar(
-        select(exists().where(Brand.id == update_data['brand_id']))
-    )
+        brand_exists = await db.scalar(select(exists().where(Brand.id == update_data['brand_id'])))
         if not brand_exists:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -216,9 +203,7 @@ async def update_product(
             )
 
     if 'seller_id' in update_data and update_data['seller_id'] != product.seller_id:
-        seller_exists = await db.scalar(
-        select(exists().where(User.id == update_data['seller_id']))
-    )
+        seller_exists = await db.scalar(select(exists().where(User.id == update_data['seller_id'])))
         if not seller_exists:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -227,7 +212,7 @@ async def update_product(
 
     for field, value in update_data.items():
         setattr(product, field, value)
-    
+
     await db.commit()
     await db.refresh(product)
 
@@ -249,7 +234,7 @@ async def update_product(
 async def delete_product(
     product_id: int,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session),
 ):
     product = await db.get(Product, product_id)
 
@@ -258,11 +243,9 @@ async def delete_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Produto não encontrado',
         )
-    
+
     # Verifica se o produto é do usuario logado
     verify_product_seller(current_user, product.seller_id)
-    
+
     await db.delete(product)
     await db.commit()
-
-    return 
