@@ -1,0 +1,34 @@
+site_name: Products Api
+site_description: Uma API REST completa para gerenciamento de produtos e usuários
+site_author: Guilherme Rodrigues Ferreira
+
+theme:
+  name: material
+  font:
+    text: Roboto
+
+nav:
+  - Início: index.md
+  - Visão Geral: overview.md
+  - Pré-requisitos: prerequisites.md
+  - Instalação: installation.md
+  - Configuração do Projeto: configuration.md
+  - Guidelines e Padrões: guidelines.md
+  - Estrutura do Projeto: project-structure.md
+  - API Endpoints: api-endpoints.md
+  - Modelagem do Sistema: system-modeling.md
+  - Autenticação e Segurança: authentication-security.md
+  - Desenvolvimento: development.md
+  - Testes: tests.md
+  - Deploy: deploy.md
+  - Contribuição: contribution.md
+  - Release Notes: release-notes.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
